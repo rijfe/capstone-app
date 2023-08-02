@@ -6,7 +6,9 @@
     <!-- <= 30 + Xiaomi/MIUI -->
     <uses-permission android:name="android.permission.BLUETOOTH" android:maxSdkVersion="32"/>
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" android:maxSdkVersion="30"/>
-    <uses-permission-sdk-23 android:name="android.permission.ACCESS_FINE_LOCATION" android:maxSdkVersion="30"/>
+    <uses-permission-sdk-23 android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
     <!-- >= API 31 -->
     <uses-permission android:name="android.permission.BLUETOOTH_SCAN"
         android:usesPermissionFlags="neverForLocation" tools:targetApi="s" />
@@ -17,9 +19,12 @@
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/AppTheme"
-        tools:ignore="AllowBackup,GoogleAppIndexingWarning">
+        tools:ignore="AllowBackup,GoogleAppIndexingWarning"
+        android:usesCleartextTraffic="true">
+<!--        android:usesCleartextTraffic="true"-->
+        <meta-data android:name="com.kakao.sdk.AppKey" android:value="ea40478119590c2c58a371cfd9af9686"/>
         <activity
-            android:name=".MainActivity"
+            android:name="de.kai_morich.capstone.MainActivity"
             android:windowSoftInputMode="stateHidden|adjustResize"
             android:exported="true">
             <intent-filter>
@@ -27,7 +32,13 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <service android:name=".SerialService" />
+        <activity android:name="de.kai_morich.capstone.MainScreen">
+
+
+        </activity>
+        <activity android:name="de.kai_morich.capstone.Signup"></activity>
+        <service android:name="de.kai_morich.capstone.SerialService" />
+
     </application>
 
 </manifest>

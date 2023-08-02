@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Simple BLE Terminal</string>
+    <string name="app_name">Mobicom</string>
     <string name="devices">Bluetooth LE Devices</string>
 
     <string name="bluetooth_permission_title">Bluetooth permission</string>
@@ -11,5 +11,7 @@
     <string name="location_permission_denied">As location permission has not been granted, this app cannot scan for Bluetooth LE devices.</string>
 
     <string name="pairing_request">PAIRING requested\n-> Perform pairing steps. Connect again</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 
 </resources>

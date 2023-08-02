@@ -1,4 +1,4 @@
-package de.kai_morich.simple_bluetooth_le_terminal;
+package de.kai_morich.capstone;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
@@ -14,6 +14,9 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.fragment.app.Fragment;
 
 import java.util.Map;
+
+import de.kai_morich.simple_bluetooth_le_terminal.BuildConfig;
+import de.kai_morich.simple_bluetooth_le_terminal.R;
 
 public class BluetoothUtil {
 

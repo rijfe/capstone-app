@@ -1,4 +1,4 @@
-package de.kai_morich.simple_bluetooth_le_terminal;
+package de.kai_morich.capstone;
 
 import android.text.Editable;
 import android.text.InputType;
@@ -70,7 +70,7 @@ final class TextUtil {
     }
 
     /**
-     * use https://en.wikipedia.org/wiki/Caret_notation to avoid invisible control characters
+     * use https://endia.org/wiki/Caret_notation .wikipeto avoid invisible control characters
      */
     static CharSequence toCaretString(CharSequence s, boolean keepNewline) {
         return toCaretString(s, keepNewline, s.length());

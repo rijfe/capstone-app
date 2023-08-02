@@ -13,5 +13,6 @@
         android:layout_marginBottom="12dp"
         android:gravity="center"
         android:text="@string/devices"
-        android:textAppearance="@style/TextAppearance.AppCompat.Medium" />
+        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+        android:textColor="#000000" />
 </LinearLayout>
