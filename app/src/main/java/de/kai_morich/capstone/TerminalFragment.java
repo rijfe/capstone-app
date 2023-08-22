@@ -263,7 +263,9 @@ public class TerminalFragment extends Fragment implements ServiceConnection, Ser
         SpannableStringBuilder angle = new SpannableStringBuilder();
         String msg;
         String[] arr = new String[0];
-        CountDownTimer countDownTimer = null;
+        String[] distanceL = new String[0];
+        String[] distanceR = new String[0];
+        String[] angleArr = new String[0];
         String url = "http://172.20.10.7:8080/data/endpost/";
         OkHttpClient client = new OkHttpClient();
 
@@ -288,330 +290,76 @@ public class TerminalFragment extends Fragment implements ServiceConnection, Ser
                     }
                     pendingNewline = msg.charAt(msg.length() - 1) == '\r';
                 }
-                spn.append(TextUtil.toCaretString(arr[0], newline.length() != 0));
-                r.append(arr[1]);
-                angle.append(arr[2]);
+                distanceR = arr[0].split("-");
+                spn.append(TextUtil.toCaretString(distanceR[0], newline.length() != 0));
+                distanceL = arr[1].split("-");
+                angleArr = arr[2].split("-");
+                r.append(distanceL[0]);
+                angle.append(angleArr[0]);
             }
         }
-        if(Float.parseFloat(angle.toString()) > 40.0 && arr[2]!=null){
+        if(Float.parseFloat(angle.toString()) > 40.0 && angleArr[0]!=null){
             imageView.setImageResource(R.drawable.bir);
             angleText.setTextColor(getResources().getColor(R.color.colorPrimaryDark)); // set as default color to reduce number of spans
             angleText.setMovementMethod(ScrollingMovementMethod.getInstance());
             statusText.setText("지그재그 운행중");
-            countDownTimer = new CountDownTimer(3000,3000) {
-                @Override
-                public void onTick(long l) {
-
-                }
-
-                @Override
-                public void onFinish() {
-                    zigzagAmount += 1;
-                    zigzagText.setText(String.valueOf(zigzagAmount));
-                    JSONObject data = new JSONObject();
-                    try {
-                        data.put("data", "지그재그 운행중");
-                    } catch (JSONException e) {
-                        throw new RuntimeException(e);
-                    }
-
-                    RequestBody body = RequestBody.create(MediaType.get("application/json; charset=utf-8"), data.toString());
-                    Request request = new Request.Builder().addHeader("Content-Type","application/json").url(url).post(body).build();
-
-                    client.newCall(request).enqueue(new Callback() {
-                        @Override
-                        public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                            e.printStackTrace();
-                        }
-
-                        @Override
-                        public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
-                            if(!response.isSuccessful()) {
-                                Log.i("tag", "응답 실패");
-                            }else{
-                                Log.i("tag","응답 성공");
-                                final String responseData = response.body().string();
-
-                                runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        try {
-                                            Toast.makeText(service, "응답"+responseData, Toast.LENGTH_SHORT).show();
-
-                                        }catch (Exception e){
-                                            e.printStackTrace();
-                                        }
-                                    }
-                                });
-                            }
-                        }
-                    });
-                }
-            };
-
-            countDownTimer.start();
+            if(Integer.parseInt(angleArr[1]) >= 3){
+                // data 보내기
+            }
         }
-        if(Float.parseFloat(angle.toString()) < -40.0 && arr[2]!=null ){
+        if(Float.parseFloat(angle.toString()) < -40.0 && angleArr[0]!=null ){
             imageView.setImageResource(R.drawable.bil);
             angleText.setTextColor(getResources().getColor(R.color.colorPrimaryDark)); // set as default color to reduce number of spans
             angleText.setMovementMethod(ScrollingMovementMethod.getInstance());
             statusText.setText("지그재그 운행중");
-            countDownTimer = new CountDownTimer(3000,3000) {
-                @Override
-                public void onTick(long l) {
-
-                }
-
-                @Override
-                public void onFinish() {
-                    zigzagAmount += 1;
-                    zigzagText.setText(String.valueOf(zigzagAmount));
-                    JSONObject data = new JSONObject();
-                    try {
-                        data.put("data", "지그재그 운행중");
-                    } catch (JSONException e) {
-                        throw new RuntimeException(e);
-                    }
-
-                    RequestBody body = RequestBody.create(MediaType.get("application/json; charset=utf-8"), data.toString());
-                    Request request = new Request.Builder().addHeader("Content-Type","application/json").url(url).post(body).build();
-
-                    client.newCall(request).enqueue(new Callback() {
-                        @Override
-                        public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                            e.printStackTrace();
-                        }
-
-                        @Override
-                        public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
-                            if(!response.isSuccessful()) {
-                                Log.i("tag", "응답 실패");
-                            }else{
-                                Log.i("tag","응답 성공");
-                                final String responseData = response.body().string();
-
-                                runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        try {
-                                            Toast.makeText(service, "응답"+responseData, Toast.LENGTH_SHORT).show();
-
-                                        }catch (Exception e){
-                                            e.printStackTrace();
-                                        }
-                                    }
-                                });
-                            }
-                        }
-
-                    });
-                }
-            };
-
-            countDownTimer.start();
-
+            if(Integer.parseInt(angleArr[1]) >= 3){
+                // data 보내기
+            }
         }
-        if(Float.parseFloat(angle.toString())>-40.0 && Float.parseFloat(angle.toString()) < 40.0 && arr[2] != null){
+        if(Float.parseFloat(angle.toString())>-40.0 && Float.parseFloat(angle.toString()) < 40.0 && angleArr[0] != null){
             imageView.setImageResource(R.drawable.bi);
             angleText.setTextColor(getResources().getColor(R.color.colorRecieveText)); // set as default color to reduce number of spans
             angleText.setMovementMethod(ScrollingMovementMethod.getInstance());
             statusText.setText("안전 운전중");
-            if(countDownTimer != null){
-                countDownTimer.cancel();
-            }
         }
-        if(Float.parseFloat(spn.toString())<=40.0 && arr[0]!=null){
+        if(Float.parseFloat(spn.toString())<=40.0 && distanceR[0]!=null){
             imageView.setImageResource(R.drawable.closel);
             receiveText.setTextColor(getResources().getColor(R.color.colorPrimaryDark));
             receiveText.setMovementMethod(ScrollingMovementMethod.getInstance());
             statusText.setText("차간 운행중");
-            countDownTimer = new CountDownTimer(3000,3000) {
-                @Override
-                public void onTick(long l) {
 
-                }
-
-                @Override
-                public void onFinish() {
-                    closeAmount += 1;
-                    closeText.setText(String.valueOf(closeAmount));
-                    JSONObject data = new JSONObject();
-                    try {
-                        data.put("data", "차간 운행중");
-                    } catch (JSONException e) {
-                        throw new RuntimeException(e);
-                    }
-
-                    RequestBody body = RequestBody.create(MediaType.get("application/json; charset=utf-8"), data.toString());
-                    Request request = new Request.Builder().addHeader("Content-Type","application/json").url(url).post(body).build();
-
-                    client.newCall(request).enqueue(new Callback() {
-                        @Override
-                        public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                            e.printStackTrace();
-                        }
-
-                        @Override
-                        public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
-                            if(!response.isSuccessful()) {
-                                Log.i("tag", "응답 실패");
-                            }else{
-                                Log.i("tag","응답 성공");
-                                final String responseData = response.body().string();
-
-                                runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        try {
-                                            Toast.makeText(service, "응답"+responseData, Toast.LENGTH_SHORT).show();
-
-                                        }catch (Exception e){
-                                            e.printStackTrace();
-                                        }
-                                    }
-                                });
-                            }
-                        }
-
-                    });
-                }
-            };
-
-            countDownTimer.start();
-
+            if(Integer.parseInt(distanceR[1]) >= 3){
+                // data 보내기
+            }
         }
-        if(Float.parseFloat(r.toString())<=40.0 && arr[1]!=null){
+        if(Float.parseFloat(r.toString())<=40.0 && distanceL[0]!=null){
             imageView.setImageResource(R.drawable.closer);
             right.setTextColor(getResources().getColor(R.color.colorPrimaryDark));
             right.setMovementMethod(ScrollingMovementMethod.getInstance());
             statusText.setText("차간 운행중");
-            countDownTimer = new CountDownTimer(3000,3000) {
-                @Override
-                public void onTick(long l) {
-
-                }
-
-                @Override
-                public void onFinish() {
-                    closeAmount += 1;
-                    closeText.setText(String.valueOf(closeAmount));
-                    JSONObject data = new JSONObject();
-                    try {
-                        data.put("data", "차간 운행중");
-                    } catch (JSONException e) {
-                        throw new RuntimeException(e);
-                    }
-
-                    RequestBody body = RequestBody.create(MediaType.get("application/json; charset=utf-8"), data.toString());
-                    Request request = new Request.Builder().addHeader("Content-Type","application/json").url(url).post(body).build();
-
-                    client.newCall(request).enqueue(new Callback() {
-                        @Override
-                        public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                            e.printStackTrace();
-                        }
-
-                        @Override
-                        public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
-                            if(!response.isSuccessful()) {
-                                Log.i("tag", "응답 실패");
-                            }else{
-                                Log.i("tag","응답 성공");
-                                final String responseData = response.body().string();
-
-                                runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        try {
-                                            Toast.makeText(service, "응답"+responseData, Toast.LENGTH_SHORT).show();
-
-                                        }catch (Exception e){
-                                            e.printStackTrace();
-                                        }
-                                    }
-                                });
-                            }
-                        }
-
-                    });
-                }
-            };
-
-            countDownTimer.start();
-
+            if(Integer.parseInt(distanceL[1]) >= 3){
+                // data 보내기
+            }
         }
-        if(Float.parseFloat(r.toString())<=40.0 && arr[1]!=null && Float.parseFloat(spn.toString())<=40.0 && arr[0]!=null) {
+        if(Float.parseFloat(r.toString())<=40.0 && distanceL[0]!=null && Float.parseFloat(spn.toString())<=40.0 && distanceR[0]!=null) {
             imageView.setImageResource(R.drawable.closeboth);
             right.setTextColor(getResources().getColor(R.color.colorPrimaryDark));
             right.setMovementMethod(ScrollingMovementMethod.getInstance());
             receiveText.setTextColor(getResources().getColor(R.color.colorPrimaryDark));
             receiveText.setMovementMethod(ScrollingMovementMethod.getInstance());
             statusText.setText("차간 운행중");
-            countDownTimer = new CountDownTimer(3000, 3000) {
-                @Override
-                public void onTick(long l) {
-
-                }
-
-                @Override
-                public void onFinish() {
-                    closeAmount += 1;
-                    closeText.setText(String.valueOf(closeAmount));
-                    JSONObject data = new JSONObject();
-                    try {
-                        data.put("type", "차간 운행중");
-                    } catch (JSONException e) {
-                        throw new RuntimeException(e);
-                    }
-
-                    RequestBody body = RequestBody.create(MediaType.get("application/json; charset=utf-8"), data.toString());
-                    Request request = new Request.Builder().addHeader("Content-Type", "application/json").url(url).post(body).build();
-
-                    client.newCall(request).enqueue(new Callback() {
-                        @Override
-                        public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                            e.printStackTrace();
-                        }
-
-                        @Override
-                        public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
-                            if (!response.isSuccessful()) {
-                                Log.i("tag", "응답 실패");
-                            } else {
-                                Log.i("tag", "응답 성공");
-                                final String responseData = response.body().string();
-
-                                runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        try {
-                                            Toast.makeText(service, "응답" + responseData, Toast.LENGTH_SHORT).show();
-
-                                        } catch (Exception e) {
-                                            e.printStackTrace();
-                                        }
-                                    }
-                                });
-                            }
-                        }
-
-                    });
-                }
-            };
-
-            countDownTimer.start();
+            if(Integer.parseInt(distanceL[1]) >= 3 && Integer.parseInt(distanceR[1]) >= 3){
+                // data 보내기
+            }
         }
 
-        if(Float.parseFloat(r.toString()) > 40.0 && arr[1]!=null && Float.parseFloat(spn.toString())>40.0 && arr[0]!=null){
+        if(Float.parseFloat(r.toString()) > 40.0 && distanceL[0]!=null && Float.parseFloat(spn.toString())>40.0 && distanceR[0]!=null){
             imageView.setImageResource(R.drawable.bi);
             right.setTextColor(getResources().getColor(R.color.colorRecieveText));
             right.setMovementMethod(ScrollingMovementMethod.getInstance());
             receiveText.setTextColor(getResources().getColor(R.color.colorRecieveText));
             receiveText.setMovementMethod(ScrollingMovementMethod.getInstance());
             statusText.setText("안전 운전중");
-            if(countDownTimer != null){
-                countDownTimer.cancel();
-            }
         }
 
 
@@ -659,50 +407,50 @@ public class TerminalFragment extends Fragment implements ServiceConnection, Ser
         disconnect();
     }
 
-    public void sendStatus(String s){
-        String url = "http://172.17.33.117:8080/data/endpost/";
-
-        JSONObject data = new JSONObject();
-        try {
-            data.put("type", s);
-        } catch (JSONException e) {
-            throw new RuntimeException(e);
-        }
-
-        RequestBody body = RequestBody.create(MediaType.get("application/json; charset=utf-8"), data.toString());
-        OkHttpClient client = new OkHttpClient();
-        Request request = new Request.Builder().addHeader("Content-Type","application/json").url(url).post(body).build();
-
-        client.newCall(request).enqueue(new Callback() {
-            @Override
-            public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                e.printStackTrace();
-            }
-
-            @Override
-            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
-                if(!response.isSuccessful()) {
-                    Log.i("tag", "응답 실패");
-                }else{
-                    Log.i("tag","응답 성공");
-                    final String responseData = response.body().string();
-
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            try {
-                                Toast.makeText(service, "응답"+responseData, Toast.LENGTH_SHORT).show();
-
-                            }catch (Exception e){
-                                e.printStackTrace();
-                            }
-                        }
-                    });
-                }
-            }
-
-        });
-    }
+//    public void sendStatus(String s){
+//        String url = "http://172.17.33.117:8080/data/endpost/";
+//
+//        JSONObject data = new JSONObject();
+//        try {
+//            data.put("type", s);
+//        } catch (JSONException e) {
+//            throw new RuntimeException(e);
+//        }
+//
+//        RequestBody body = RequestBody.create(MediaType.get("application/json; charset=utf-8"), data.toString());
+//        OkHttpClient client = new OkHttpClient();
+//        Request request = new Request.Builder().addHeader("Content-Type","application/json").url(url).post(body).build();
+//
+//        client.newCall(request).enqueue(new Callback() {
+//            @Override
+//            public void onFailure(@NonNull Call call, @NonNull IOException e) {
+//                e.printStackTrace();
+//            }
+//
+//            @Override
+//            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
+//                if(!response.isSuccessful()) {
+//                    Log.i("tag", "응답 실패");
+//                }else{
+//                    Log.i("tag","응답 성공");
+//                    final String responseData = response.body().string();
+//
+//                    runOnUiThread(new Runnable() {
+//                        @Override
+//                        public void run() {
+//                            try {
+//                                Toast.makeText(service, "응답"+responseData, Toast.LENGTH_SHORT).show();
+//
+//                            }catch (Exception e){
+//                                e.printStackTrace();
+//                            }
+//                        }
+//                    });
+//                }
+//            }
+//
+//        });
+//    }
 
     private void runOnUiThread(Runnable runnable) {
 
