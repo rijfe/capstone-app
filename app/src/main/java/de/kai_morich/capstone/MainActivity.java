@@ -59,21 +59,21 @@ MainActivity extends AppCompatActivity{
         signIn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                getAppKeyHash();
-                String url = "http://172.20.10.7:8080/user/login";
-                String id = idText.getText().toString();
-                String pw = pwText.getText().toString();
-                JSONObject data = new JSONObject();
-                try {
-                    data.put("email", id);
-                    data.put("password",pw);
-                } catch (JSONException e) {
-                    throw new RuntimeException(e);
-                }
+//                getAppKeyHash();
+                String url = "http://172.20.10.7:8080/getDataEmail/sujin@gmail.com/";
+//                String id = idText.getText().toString();
+//                String pw = pwText.getText().toString();
+//                JSONObject data = new JSONObject();
+//                try {
+//                    data.put("email", id);
+//                    data.put("password",pw);
+//                } catch (JSONException e) {
+//                    throw new RuntimeException(e);
+//                }
 
-                RequestBody body = RequestBody.create(MediaType.get("application/json; charset=utf-8"), data.toString());
+//                RequestBody body = RequestBody.create(MediaType.get("application/json; charset=utf-8"), data.toString());
                 OkHttpClient client = new OkHttpClient();
-                Request request = new Request.Builder().addHeader("Content-Type","application/json").url(url).post(body).build();
+                Request request = new Request.Builder().addHeader("Content-Type","application/json").url(url).get().build();
 
                 client.newCall(request).enqueue(new Callback() {
                     @Override
@@ -100,13 +100,14 @@ MainActivity extends AppCompatActivity{
                                     }
                                 }
                             });
-                            Intent intent = new Intent(MainActivity.this, MainScreen.class);
-                            startActivity(intent);
-                            finish();
+//                            Intent intent = new Intent(MainActivity.this, MainScreen.class);
+//                            startActivity(intent);
+//                            finish();
                         }
                     }
                 });
-
+//                Intent intent = new Intent(MainActivity.this, MainScreen.class);
+//                startActivity(intent);
             }
         });
 
