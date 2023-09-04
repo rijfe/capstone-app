@@ -60,7 +60,7 @@ MainActivity extends AppCompatActivity{
             @Override
             public void onClick(View view) {
 //                getAppKeyHash();
-                String url = "http://172.20.10.7:8080/getDataEmail/sujin@gmail.com/";
+//                String url = "http://172.20.10.7:8080/getDataEmail/sujin@gmail.com/";
 //                String id = idText.getText().toString();
 //                String pw = pwText.getText().toString();
 //                JSONObject data = new JSONObject();
@@ -72,42 +72,42 @@ MainActivity extends AppCompatActivity{
 //                }
 
 //                RequestBody body = RequestBody.create(MediaType.get("application/json; charset=utf-8"), data.toString());
-                OkHttpClient client = new OkHttpClient();
-                Request request = new Request.Builder().addHeader("Content-Type","application/json").url(url).get().build();
-
-                client.newCall(request).enqueue(new Callback() {
-                    @Override
-                    public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                        e.printStackTrace();
-                    }
-
-                    @Override
-                    public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
-                        if(!response.isSuccessful()) {
-                            Log.i("tag", "응답 실패");
-                        }else{
-                            Log.i("tag","응답 성공");
-                            final String responseData = response.body().string();
-
-                            runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    try {
-                                        Toast.makeText(getApplicationContext(), "응답"+responseData, Toast.LENGTH_SHORT).show();
-
-                                    }catch (Exception e){
-                                        e.printStackTrace();
-                                    }
-                                }
-                            });
+//                OkHttpClient client = new OkHttpClient();
+//                Request request = new Request.Builder().addHeader("Content-Type","application/json").url(url).get().build();
+//
+//                client.newCall(request).enqueue(new Callback() {
+//                    @Override
+//                    public void onFailure(@NonNull Call call, @NonNull IOException e) {
+//                        e.printStackTrace();
+//                    }
+//
+//                    @Override
+//                    public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
+//                        if(!response.isSuccessful()) {
+//                            Log.i("tag", "응답 실패");
+//                        }else{
+//                            Log.i("tag","응답 성공");
+//                            final String responseData = response.body().string();
+//
+//                            runOnUiThread(new Runnable() {
+//                                @Override
+//                                public void run() {
+//                                    try {
+//                                        Toast.makeText(getApplicationContext(), "응답"+responseData, Toast.LENGTH_SHORT).show();
+//
+//                                    }catch (Exception e){
+//                                        e.printStackTrace();
+//                                    }
+//                                }
+//                            });
 //                            Intent intent = new Intent(MainActivity.this, MainScreen.class);
 //                            startActivity(intent);
 //                            finish();
-                        }
-                    }
-                });
-//                Intent intent = new Intent(MainActivity.this, MainScreen.class);
-//                startActivity(intent);
+//                        }
+//                    }
+//                });
+                Intent intent = new Intent(MainActivity.this, MainScreen.class);
+                startActivity(intent);
             }
         });
 

@@ -146,7 +146,7 @@ class SerialSocket extends BluetoothGattCallback {
     }
 
     /**
-     * connect-success and most connect-errors are returned asynchronously to listener
+     * 연결 성공 및 대부분의 연결 실패는 수신기에 비동기적으로 반환됩니다
      */
     void connect(SerialListener listener) throws IOException {
         if(connected || gatt != null)
@@ -165,12 +165,10 @@ class SerialSocket extends BluetoothGattCallback {
         }
         if (gatt == null)
             throw new IOException("connectGatt failed");
-        // continues asynchronously in onPairingBroadcastReceive() and onConnectionStateChange()
     }
 
     private void onPairingBroadcastReceive(Context context, Intent intent) {
-        // for ARM Mbed, Microbit, ... use pairing from Android bluetooth settings
-        // for HM10-clone, ... pairing is initiated here
+        // Android Bluetooth 설정에서 페어링 사용
         BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
         if(device==null || !device.equals(this.device))
             return;
@@ -179,7 +177,6 @@ class SerialSocket extends BluetoothGattCallback {
                 final int pairingVariant = intent.getIntExtra(BluetoothDevice.EXTRA_PAIRING_VARIANT, -1);
                 Log.d(TAG, "pairing request " + pairingVariant);
                 onSerialConnectError(new IOException(context.getString(R.string.pairing_request)));
-                // pairing dialog brings app to background (onPause), but it is still partly visible (no onStop), so there is no automatic disconnect()
                 break;
             case BluetoothDevice.ACTION_BOND_STATE_CHANGED:
                 final int bondState = intent.getIntExtra(BluetoothDevice.EXTRA_BOND_STATE, -1);
@@ -194,7 +191,6 @@ class SerialSocket extends BluetoothGattCallback {
 
     @Override
     public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
-        // status directly taken from gat_api.h, e.g. 133=0x85=GATT_ERROR ~= timeout
         if (newState == BluetoothProfile.STATE_CONNECTED) {
             Log.d(TAG,"connect status "+status+", discoverServices");
             if (!gatt.discoverServices())
@@ -207,7 +203,7 @@ class SerialSocket extends BluetoothGattCallback {
         } else {
             Log.d(TAG, "unknown connect state "+newState+" "+status);
         }
-        // continues asynchronously in onServicesDiscovered()
+        // onServicesDiscovered() 에서 비동기적으로 계속됨
     }
 
     @Override
@@ -274,8 +270,8 @@ class SerialSocket extends BluetoothGattCallback {
 
     private void connectCharacteristics3(BluetoothGatt gatt) {
         int writeProperties = writeCharacteristic.getProperties();
-        if((writeProperties & (BluetoothGattCharacteristic.PROPERTY_WRITE +     // Microbit,HM10-clone have WRITE
-                BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE)) ==0) { // HM10,TI uart,Telit have only WRITE_NO_RESPONSE
+        if((writeProperties & (BluetoothGattCharacteristic.PROPERTY_WRITE +
+                BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE)) ==0) {
             onSerialConnectError(new IOException("write characteristic not writable"));
             return;
         }
@@ -303,7 +299,7 @@ class SerialSocket extends BluetoothGattCallback {
         if(!gatt.writeDescriptor(readDescriptor)) {
             onSerialConnectError(new IOException("read characteristic CCCD descriptor not writable"));
         }
-        // continues asynchronously in onDescriptorWrite()
+        // onDescriptorWrite()에서 비동기적으로 계속됩니다
     }
 
     @Override
@@ -316,8 +312,8 @@ class SerialSocket extends BluetoothGattCallback {
             if (status != BluetoothGatt.GATT_SUCCESS) {
                 onSerialConnectError(new IOException("write descriptor failed"));
             } else {
-                // onCharacteristicChanged with incoming data can happen after writeDescriptor(ENABLE_INDICATION/NOTIFICATION)
-                // before confirmed by this method, so receive data can be shown before device is shown as 'Connected'.
+                // 특성이 변경된 경우 들어오는 데이터가 변경된 경우 디스크립터를 쓴 후에 발생할 수 있습니다.
+                // 이 방법으로 확인하기 전에 장치가 '연결됨'으로 표시되기 전에 수신 데이터를 표시할 수 있습니다.
                 onSerialConnect();
                 connected = true;
                 Log.d(TAG, "connected");
@@ -379,7 +375,7 @@ class SerialSocket extends BluetoothGattCallback {
                 Log.d(TAG,"write started, len="+data0.length);
             }
         }
-        // continues asynchronously in onCharacteristicWrite()
+        // onCharacteristicWrite() 에서 비동기적으로 계속됩니다
     }
 
     @Override
@@ -393,7 +389,7 @@ class SerialSocket extends BluetoothGattCallback {
         delegate.onCharacteristicWrite(gatt, characteristic, status);
         if(canceled)
             return;
-        if(characteristic == writeCharacteristic) { // NOPMD - test object identity
+        if(characteristic == writeCharacteristic) {
             Log.d(TAG,"write finished, status="+status);
             writeNext();
         }
@@ -544,7 +540,7 @@ class SerialSocket extends BluetoothGattCallback {
             }
             Log.d(TAG, "writing read credits characteristic descriptor");
             return false;
-            // continues asynchronously in connectCharacteristics2
+            //connectCharacteristics2 에서 비동기적으로 계속됩니다
         }
 
         @Override
@@ -563,8 +559,7 @@ class SerialSocket extends BluetoothGattCallback {
                     readCharacteristic.setWriteType(BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE);
                     writeCharacteristic.setWriteType(BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE);
                     grantReadCredits();
-                    // grantReadCredits includes gatt.writeCharacteristic(writeCreditsCharacteristic)
-                    // but we do not have to wait for confirmation, as it is the last write of connect phase.
+                    // 연결 단계의 마지막 write이기 때문에 확인을 기다릴 필요가 없습니다.
                 }
             }
         }
@@ -591,14 +586,14 @@ class SerialSocket extends BluetoothGattCallback {
 
         @Override
         void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
-            if(characteristic == writeCharacteristic) { // NOPMD - test object identity
+            if(characteristic == writeCharacteristic) {
                 synchronized (writeBuffer) {
                     if (writeCredits > 0)
                         writeCredits -= 1;
                 }
                 Log.d(TAG, "write finished, credits=" + writeCredits);
             }
-            if(characteristic == writeCreditsCharacteristic) { // NOPMD - test object identity
+            if(characteristic == writeCreditsCharacteristic) {
                 Log.d(TAG,"write credits finished, status="+status);
             }
         }

@@ -1,5 +1,7 @@
 package de.kai_morich.capstone;
 
+import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
@@ -8,6 +10,12 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.pm.PackageManager;
+import android.icu.text.SimpleDateFormat;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.IBinder;
@@ -29,6 +37,8 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
+import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 
 import org.json.JSONException;
@@ -36,6 +46,7 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.ArrayDeque;
+import java.util.Date;
 
 import de.kai_morich.simple_bluetooth_le_terminal.R;
 import okhttp3.Call;
@@ -46,9 +57,10 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
+@RequiresApi(api = Build.VERSION_CODES.N)
 public class TerminalFragment extends Fragment implements ServiceConnection, SerialListener {
 
-    private enum Connected { False, Pending, True }
+    private enum Connected {False, Pending, True}
 
     private String deviceAddress;
     private SerialService service;
@@ -70,6 +82,10 @@ public class TerminalFragment extends Fragment implements ServiceConnection, Ser
     private int countR = 0;
     private int countL = 0;
     private int angleCount = 0;
+    double longitude = 0;
+    double latitude = 0;
+    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-mm-dd hh:mm:ss");
+
     /*
      * Lifecycle
      */
@@ -92,7 +108,7 @@ public class TerminalFragment extends Fragment implements ServiceConnection, Ser
     @Override
     public void onStart() {
         super.onStart();
-        if(service != null)
+        if (service != null)
             service.attach(this);
         else
             getActivity().startService(new Intent(getActivity(), SerialService.class)); // prevents service destroy on unbind from recreated activity caused by orientation change
@@ -100,12 +116,13 @@ public class TerminalFragment extends Fragment implements ServiceConnection, Ser
 
     @Override
     public void onStop() {
-        if(service != null && !getActivity().isChangingConfigurations())
+        if (service != null && !getActivity().isChangingConfigurations())
             service.detach();
         super.onStop();
     }
 
-    @SuppressWarnings("deprecation") // onAttach(context) was added with API 23. onAttach(activity) works for all API versions
+    @SuppressWarnings("deprecation")
+    // onAttach(context) was added with API 23. onAttach(activity) works for all API versions
     @Override
     public void onAttach(@NonNull Activity activity) {
         super.onAttach(activity);
@@ -114,14 +131,17 @@ public class TerminalFragment extends Fragment implements ServiceConnection, Ser
 
     @Override
     public void onDetach() {
-        try { getActivity().unbindService(this); } catch(Exception ignored) {}
+        try {
+            getActivity().unbindService(this);
+        } catch (Exception ignored) {
+        }
         super.onDetach();
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        if(initialStart && service != null) {
+        if (initialStart && service != null) {
             initialStart = false;
             getActivity().runOnUiThread(this::connect);
         }
@@ -131,7 +151,7 @@ public class TerminalFragment extends Fragment implements ServiceConnection, Ser
     public void onServiceConnected(ComponentName name, IBinder binder) {
         service = ((SerialService.SerialBinder) binder).getService();
         service.attach(this);
-        if(initialStart && isResumed()) {
+        if (initialStart && isResumed()) {
             initialStart = false;
             getActivity().runOnUiThread(this::connect);
         }
@@ -234,14 +254,14 @@ public class TerminalFragment extends Fragment implements ServiceConnection, Ser
     }
 
     private void send(String str) {
-        if(connected != Connected.True) {
+        if (connected != Connected.True) {
             Toast.makeText(getActivity(), "not connected", Toast.LENGTH_SHORT).show();
             return;
         }
         try {
             String msg;
             byte[] data;
-            if(hexEnabled) {
+            if (hexEnabled) {
                 StringBuilder sb = new StringBuilder();
                 TextUtil.toHexString(sb, TextUtil.fromHexString(str));
                 TextUtil.toHexString(sb, newline.getBytes());
@@ -262,7 +282,7 @@ public class TerminalFragment extends Fragment implements ServiceConnection, Ser
 
     private void receive(ArrayDeque<byte[]> datas) {
         SpannableStringBuilder spn = new SpannableStringBuilder();
-        SpannableStringBuilder r= new SpannableStringBuilder();
+        SpannableStringBuilder r = new SpannableStringBuilder();
         SpannableStringBuilder angle = new SpannableStringBuilder();
         String msg;
         String[] arr = new String[0];
@@ -270,7 +290,17 @@ public class TerminalFragment extends Fragment implements ServiceConnection, Ser
         String[] distanceR = new String[0];
         String[] angleArr = new String[0];
         String url = "http://172.20.10.7:8080/data/endpost/";
+        LocationManager lm = (LocationManager) service.getSystemService(Context.LOCATION_SERVICE);
+        long mNow = System.currentTimeMillis();
+        Date mDate = new Date(mNow);
 
+        LocationListener locationListener = new LocationListener() {
+            @Override
+            public void onLocationChanged(@NonNull Location location) {
+                longitude = location.getLongitude();
+                latitude = location.getLatitude();
+            }
+        };
         for (byte[] data : datas) {
             msg = new String(data);
             arr = msg.split("/");
@@ -278,11 +308,11 @@ public class TerminalFragment extends Fragment implements ServiceConnection, Ser
                 spn.append(TextUtil.toHexString(data)).append('\n');
             } else {
                 if (newline.equals(TextUtil.newline_crlf) && msg.length() > 0) {
-                    // don't show CR as ^M if directly before LF
+
                     msg = msg.replace(TextUtil.newline_crlf, TextUtil.newline_lf);
-                    // special handling if CR and LF come in separate fragments
+
                     if (pendingNewline && msg.charAt(0) == '\n') {
-                        if(spn.length() >= 2) {
+                        if (spn.length() >= 2) {
                             spn.delete(spn.length() - 2, spn.length());
                         } else {
                             Editable edt = receiveText.getEditableText();
@@ -292,100 +322,42 @@ public class TerminalFragment extends Fragment implements ServiceConnection, Ser
                     }
                     pendingNewline = msg.charAt(msg.length() - 1) == '\r';
                 }
-                Log.e("data",arr[0]);
-                //distanceR = arr[0].split("-");
+                Log.e("data", arr[0]);
                 spn.append(TextUtil.toCaretString(arr[0], newline.length() != 0));
-//                distanceL = arr[1].split("-");
-//                angleArr = arr[2].split("-");
                 r.append(arr[1]);
                 angle.append(arr[2]);
             }
         }
-//        if(Integer.parseInt(arr[3]) > 0){
-//            angleText.setTextColor(getResources().getColor(R.color.colorPrimaryDark));
-//        }
-        if(Float.parseFloat(angle.toString()) > 40.0 && arr[2]!=null){
+
+        if (Float.parseFloat(angle.toString()) > 40.0 && arr[2] != null) {
             imageView.setImageResource(R.drawable.bir);
             angleText.setTextColor(getResources().getColor(R.color.colorPrimaryDark)); // set as default color to reduce number of spans
             angleText.setMovementMethod(ScrollingMovementMethod.getInstance());
             statusText.setText("지그재그 운행중");
             angleCount += 1;
-            if(angleCount >= 3){
-                zigzagAmount += 1;
-                zigzagText.setText(Integer.toString(zigzagAmount));
-            }
+
         }
-        if(Float.parseFloat(angle.toString()) < -40.0 && arr[2]!=null ){
+        if (Float.parseFloat(angle.toString()) < -40.0 && arr[2] != null) {
             imageView.setImageResource(R.drawable.bil);
             angleText.setTextColor(getResources().getColor(R.color.colorPrimaryDark)); // set as default color to reduce number of spans
             angleText.setMovementMethod(ScrollingMovementMethod.getInstance());
             statusText.setText("지그재그 운행중");
-            if(angleCount >= 3){
-                zigzagAmount += 1;
-                zigzagText.setText(Integer.toString(zigzagAmount));
-            }
+            angleCount += 1;
+
         }
-        if(Float.parseFloat(angle.toString())>-40.0 && Float.parseFloat(angle.toString()) < 40.0 && arr[2] != null){
+        if (Float.parseFloat(angle.toString()) > -40.0 && Float.parseFloat(angle.toString()) < 40.0 && arr[2] != null) {
             imageView.setImageResource(R.drawable.bi);
             angleText.setTextColor(getResources().getColor(R.color.colorRecieveText)); // set as default color to reduce number of spans
             angleText.setMovementMethod(ScrollingMovementMethod.getInstance());
             statusText.setText("안전 운전중");
             angleCount = 0;
         }
-        if(Float.parseFloat(spn.toString())<=40.0 && arr[0]!=null){
+        if (Float.parseFloat(spn.toString()) <= 40.0 && arr[0] != null) {
             imageView.setImageResource(R.drawable.closel);
             receiveText.setTextColor(getResources().getColor(R.color.colorPrimaryDark));
             receiveText.setMovementMethod(ScrollingMovementMethod.getInstance());
             statusText.setText("차간 운행중");
             countR += 1;
-            if (countR >= 3){
-                closeAmount += 1;
-                closeText.setText(Integer.toString(closeAmount));
-
-                JSONObject data = new JSONObject();
-                try {
-                    data.put("email", "12314124");
-                    data.put("data", "android");
-                    data.put("type", "차간주행");
-                    data.put("time", "2023.08.29");
-                    data.put("location", "n5동");
-                } catch (JSONException e) {
-                    throw new RuntimeException(e);
-                }
-
-                RequestBody body = RequestBody.create(MediaType.get("application/json; charset=utf-8"), data.toString());
-                OkHttpClient client = new OkHttpClient();
-                Request request = new Request.Builder().addHeader("Content-Type","application/json").url(url).post(body).build();
-
-                client.newCall(request).enqueue(new Callback() {
-                    @Override
-                    public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                        e.printStackTrace();
-                    }
-
-                    @Override
-                    public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
-                        if(!response.isSuccessful()) {
-                            Log.i("tag", "응답 실패");
-                        }else{
-                            Log.i("tag","응답 성공");
-                            final String responseData = response.body().string();
-
-                            runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    try {
-                                       Toast.makeText(getActivity(), "응답"+responseData, Toast.LENGTH_SHORT).show();
-
-                                    }catch (Exception e){
-                                        e.printStackTrace();
-                                    }
-                                }
-                            });
-                        }
-                    }
-                });
-            }
         }
         if(Float.parseFloat(r.toString())<=40.0 && arr[1]!=null){
             imageView.setImageResource(R.drawable.closer);
@@ -393,10 +365,7 @@ public class TerminalFragment extends Fragment implements ServiceConnection, Ser
             right.setMovementMethod(ScrollingMovementMethod.getInstance());
             statusText.setText("차간 운행중");
             countL += 1;
-            if (countL >= 3){
-                closeAmount += 1;
-                closeText.setText(Integer.toString(closeAmount));
-            }
+
         }
         if(Float.parseFloat(r.toString())<=40.0 &&  arr[1]!=null && Float.parseFloat(spn.toString())<=40.0 &&  arr[0]!=null) {
             imageView.setImageResource(R.drawable.closeboth);
@@ -407,10 +376,6 @@ public class TerminalFragment extends Fragment implements ServiceConnection, Ser
             statusText.setText("차간 운행중");
             countR += 1;
             countL += 1;
-            if (countR >= 3 || countL >= 3){
-                closeAmount += 1;
-                closeText.setText(Integer.toString(closeAmount));
-            }
         }
 
         if(Float.parseFloat(r.toString()) > 40.0 &&  arr[1]!=null && Float.parseFloat(spn.toString())>40.0 &&  arr[0]!=null){
@@ -420,8 +385,71 @@ public class TerminalFragment extends Fragment implements ServiceConnection, Ser
             receiveText.setTextColor(getResources().getColor(R.color.colorRecieveText));
             receiveText.setMovementMethod(ScrollingMovementMethod.getInstance());
             statusText.setText("안전 운전중");
+            countR = 0;
+            countL = 0;
         }
+        if (angleCount >= 3) {
+            zigzagAmount += 1;
+            zigzagText.setText(Integer.toString(zigzagAmount));
+        }
+        if (countR >= 3 || countL >= 3) {
+            closeAmount += 1;
+            closeText.setText(Integer.toString(closeAmount));
+            JSONObject data = new JSONObject();
+            if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                // TODO: Consider calling
+                //    ActivityCompat#requestPermissions
+                // here to request the missing permissions, and then overriding
+                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                //                                          int[] grantResults)
+                // to handle the case where the user grants the permission. See the documentation
+                // for ActivityCompat#requestPermissions for more details.
+                return;
+            }
+            lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
+            try {
+                data.put("email", "12314124");
+                data.put("type", "차간주행");
+                data.put("time", simpleDateFormat.format(mDate));
+                data.put("latitude", latitude);
+                data.put("longitude", longitude);
+            } catch (JSONException e) {
+                throw new RuntimeException(e);
+            }
 
+            RequestBody body = RequestBody.create(MediaType.get("application/json; charset=utf-8"), data.toString());
+            OkHttpClient client = new OkHttpClient();
+            Request request = new Request.Builder().addHeader("Content-Type","application/json").url(url).post(body).build();
+
+            client.newCall(request).enqueue(new Callback() {
+                @Override
+                public void onFailure(@NonNull Call call, @NonNull IOException e) {
+                    e.printStackTrace();
+                }
+
+                @Override
+                public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
+                    if(!response.isSuccessful()) {
+                        Log.i("tag", "응답 실패");
+                    }else{
+                        Log.i("tag","응답 성공");
+                        final String responseData = response.body().string();
+
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                try {
+                                    Toast.makeText(getActivity(), "응답"+responseData, Toast.LENGTH_SHORT).show();
+
+                                }catch (Exception e){
+                                    e.printStackTrace();
+                                }
+                            }
+                        });
+                    }
+                }
+            });
+        }
 
 
         receiveText.setText(spn);
