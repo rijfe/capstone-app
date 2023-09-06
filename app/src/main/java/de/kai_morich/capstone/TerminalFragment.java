@@ -286,21 +286,24 @@ public class TerminalFragment extends Fragment implements ServiceConnection, Ser
         SpannableStringBuilder angle = new SpannableStringBuilder();
         String msg;
         String[] arr = new String[0];
-        String[] distanceL = new String[0];
-        String[] distanceR = new String[0];
-        String[] angleArr = new String[0];
-        String url = "http://172.20.10.7:8080/data/endpost/";
+        String url = "http://172.17.155.63:8080/data/endpost/";
         LocationManager lm = (LocationManager) service.getSystemService(Context.LOCATION_SERVICE);
         long mNow = System.currentTimeMillis();
         Date mDate = new Date(mNow);
 
-        LocationListener locationListener = new LocationListener() {
-            @Override
-            public void onLocationChanged(@NonNull Location location) {
-                longitude = location.getLongitude();
-                latitude = location.getLatitude();
-            }
-        };
+        if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
+        Location location = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+        longitude = location.getLongitude();
+        latitude = location.getLatitude();
         for (byte[] data : datas) {
             msg = new String(data);
             arr = msg.split("/");
@@ -324,8 +327,8 @@ public class TerminalFragment extends Fragment implements ServiceConnection, Ser
                 }
                 Log.e("data", arr[0]);
                 spn.append(TextUtil.toCaretString(arr[0], newline.length() != 0));
-                r.append(arr[1]);
-                angle.append(arr[2]);
+                r.append(TextUtil.toCaretString(arr[1], newline.length() != 0));
+                angle.append(TextUtil.toCaretString(arr[2], newline.length() != 0));
             }
         }
 
@@ -345,56 +348,10 @@ public class TerminalFragment extends Fragment implements ServiceConnection, Ser
             angleCount += 1;
 
         }
-        if (Float.parseFloat(angle.toString()) > -40.0 && Float.parseFloat(angle.toString()) < 40.0 && arr[2] != null) {
-            imageView.setImageResource(R.drawable.bi);
-            angleText.setTextColor(getResources().getColor(R.color.colorRecieveText)); // set as default color to reduce number of spans
-            angleText.setMovementMethod(ScrollingMovementMethod.getInstance());
-            statusText.setText("안전 운전중");
-            angleCount = 0;
-        }
-        if (Float.parseFloat(spn.toString()) <= 40.0 && arr[0] != null) {
-            imageView.setImageResource(R.drawable.closel);
-            receiveText.setTextColor(getResources().getColor(R.color.colorPrimaryDark));
-            receiveText.setMovementMethod(ScrollingMovementMethod.getInstance());
-            statusText.setText("차간 운행중");
-            countR += 1;
-        }
-        if(Float.parseFloat(r.toString())<=40.0 && arr[1]!=null){
-            imageView.setImageResource(R.drawable.closer);
-            right.setTextColor(getResources().getColor(R.color.colorPrimaryDark));
-            right.setMovementMethod(ScrollingMovementMethod.getInstance());
-            statusText.setText("차간 운행중");
-            countL += 1;
 
-        }
-        if(Float.parseFloat(r.toString())<=40.0 &&  arr[1]!=null && Float.parseFloat(spn.toString())<=40.0 &&  arr[0]!=null) {
-            imageView.setImageResource(R.drawable.closeboth);
-            right.setTextColor(getResources().getColor(R.color.colorPrimaryDark));
-            right.setMovementMethod(ScrollingMovementMethod.getInstance());
-            receiveText.setTextColor(getResources().getColor(R.color.colorPrimaryDark));
-            receiveText.setMovementMethod(ScrollingMovementMethod.getInstance());
-            statusText.setText("차간 운행중");
-            countR += 1;
-            countL += 1;
-        }
-
-        if(Float.parseFloat(r.toString()) > 40.0 &&  arr[1]!=null && Float.parseFloat(spn.toString())>40.0 &&  arr[0]!=null){
-            imageView.setImageResource(R.drawable.bi);
-            right.setTextColor(getResources().getColor(R.color.colorRecieveText));
-            right.setMovementMethod(ScrollingMovementMethod.getInstance());
-            receiveText.setTextColor(getResources().getColor(R.color.colorRecieveText));
-            receiveText.setMovementMethod(ScrollingMovementMethod.getInstance());
-            statusText.setText("안전 운전중");
-            countR = 0;
-            countL = 0;
-        }
         if (angleCount >= 3) {
             zigzagAmount += 1;
             zigzagText.setText(Integer.toString(zigzagAmount));
-        }
-        if (countR >= 3 || countL >= 3) {
-            closeAmount += 1;
-            closeText.setText(Integer.toString(closeAmount));
             JSONObject data = new JSONObject();
             if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                 // TODO: Consider calling
@@ -406,10 +363,9 @@ public class TerminalFragment extends Fragment implements ServiceConnection, Ser
                 // for ActivityCompat#requestPermissions for more details.
                 return;
             }
-            lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
             try {
-                data.put("email", "12314124");
-                data.put("type", "차간주행");
+                data.put("email", "sujin@gmail.com");
+                data.put("type", "와리가리");
                 data.put("time", simpleDateFormat.format(mDate));
                 data.put("latitude", latitude);
                 data.put("longitude", longitude);
@@ -449,6 +405,221 @@ public class TerminalFragment extends Fragment implements ServiceConnection, Ser
                     }
                 }
             });
+        }
+
+        if (Float.parseFloat(angle.toString()) > -40.0 && Float.parseFloat(angle.toString()) < 40.0 && arr[2] != null) {
+            imageView.setImageResource(R.drawable.bi);
+            angleText.setTextColor(getResources().getColor(R.color.colorRecieveText)); // set as default color to reduce number of spans
+            angleText.setMovementMethod(ScrollingMovementMethod.getInstance());
+            statusText.setText("안전 운전중");
+            angleCount -= 1;
+        }
+
+        if (Float.parseFloat(spn.toString()) <= 40.0 && arr[0] != null) {
+            imageView.setImageResource(R.drawable.closel);
+            receiveText.setTextColor(getResources().getColor(R.color.colorPrimaryDark));
+            receiveText.setMovementMethod(ScrollingMovementMethod.getInstance());
+            statusText.setText("차간 운행중");
+            countR += 1;
+            if (countR >= 3 ) {
+                closeAmount += 1;
+                closeText.setText(Integer.toString(closeAmount));
+                JSONObject data = new JSONObject();
+                if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                    // TODO: Consider calling
+                    //    ActivityCompat#requestPermissions
+                    // here to request the missing permissions, and then overriding
+                    //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                    //                                          int[] grantResults)
+                    // to handle the case where the user grants the permission. See the documentation
+                    // for ActivityCompat#requestPermissions for more details.
+                    return;
+                }
+
+                try {
+                    data.put("email", "sujin@gmail.com");
+                    data.put("type", "차간주행");
+                    data.put("time", simpleDateFormat.format(mDate));
+                    data.put("latitude", latitude);
+                    data.put("longitude", longitude);
+                } catch (JSONException e) {
+                    throw new RuntimeException(e);
+                }
+
+                RequestBody body = RequestBody.create(MediaType.get("application/json; charset=utf-8"), data.toString());
+                OkHttpClient client = new OkHttpClient();
+                Request request = new Request.Builder().addHeader("Content-Type","application/json").url(url).post(body).build();
+
+                client.newCall(request).enqueue(new Callback() {
+                    @Override
+                    public void onFailure(@NonNull Call call, @NonNull IOException e) {
+                        e.printStackTrace();
+                    }
+
+                    @Override
+                    public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
+                        if(!response.isSuccessful()) {
+                            Log.i("tag", "응답 실패");
+                        }else{
+                            Log.i("tag","응답 성공");
+                            final String responseData = response.body().string();
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    try {
+                                        Toast.makeText(getActivity(), "응답"+responseData, Toast.LENGTH_SHORT).show();
+
+                                    }catch (Exception e){
+                                        e.printStackTrace();
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        }
+        if(Float.parseFloat(r.toString())<=40.0 && arr[1]!=null){
+            imageView.setImageResource(R.drawable.closer);
+            right.setTextColor(getResources().getColor(R.color.colorPrimaryDark));
+            right.setMovementMethod(ScrollingMovementMethod.getInstance());
+            statusText.setText("차간 운행중");
+            countL += 1;
+            if (countL >= 3) {
+                closeAmount += 1;
+                closeText.setText(Integer.toString(closeAmount));
+                JSONObject data = new JSONObject();
+                if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                    // TODO: Consider calling
+                    //    ActivityCompat#requestPermissions
+                    // here to request the missing permissions, and then overriding
+                    //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                    //                                          int[] grantResults)
+                    // to handle the case where the user grants the permission. See the documentation
+                    // for ActivityCompat#requestPermissions for more details.
+                    return;
+                }
+
+                try {
+                    data.put("email", "sujin@gmail.com");
+                    data.put("type", "차간주행");
+                    data.put("time", simpleDateFormat.format(mDate));
+                    data.put("latitude", latitude);
+                    data.put("longitude", longitude);
+                } catch (JSONException e) {
+                    throw new RuntimeException(e);
+                }
+
+                RequestBody body = RequestBody.create(MediaType.get("application/json; charset=utf-8"), data.toString());
+                OkHttpClient client = new OkHttpClient();
+                Request request = new Request.Builder().addHeader("Content-Type","application/json").url(url).post(body).build();
+
+                client.newCall(request).enqueue(new Callback() {
+                    @Override
+                    public void onFailure(@NonNull Call call, @NonNull IOException e) {
+                        e.printStackTrace();
+                    }
+
+                    @Override
+                    public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
+                        if(!response.isSuccessful()) {
+                            Log.i("tag", "응답 실패");
+                        }else{
+                            Log.i("tag","응답 성공");
+                            final String responseData = response.body().string();
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    try {
+                                        Toast.makeText(getActivity(), "응답"+responseData, Toast.LENGTH_SHORT).show();
+
+                                    }catch (Exception e){
+                                        e.printStackTrace();
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        }
+        if(Float.parseFloat(r.toString())<=40.0 &&  arr[1]!=null && Float.parseFloat(spn.toString())<=40.0 &&  arr[0]!=null) {
+            imageView.setImageResource(R.drawable.closeboth);
+            right.setTextColor(getResources().getColor(R.color.colorPrimaryDark));
+            right.setMovementMethod(ScrollingMovementMethod.getInstance());
+            receiveText.setTextColor(getResources().getColor(R.color.colorPrimaryDark));
+            receiveText.setMovementMethod(ScrollingMovementMethod.getInstance());
+            statusText.setText("차간 운행중");
+            countR += 1;
+            countL += 1;
+            if (countR >= 3 || countL >= 3) {
+                closeAmount += 1;
+                closeText.setText(Integer.toString(closeAmount));
+                JSONObject data = new JSONObject();
+                if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                    // TODO: Consider calling
+                    //    ActivityCompat#requestPermissions
+                    // here to request the missing permissions, and then overriding
+                    //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                    //                                          int[] grantResults)
+                    // to handle the case where the user grants the permission. See the documentation
+                    // for ActivityCompat#requestPermissions for more details.
+                    return;
+                }
+
+                try {
+                    data.put("email", "sujin@gmail.com");
+                    data.put("type", "차간주행");
+                    data.put("time", simpleDateFormat.format(mDate));
+                    data.put("latitude", latitude);
+                    data.put("longitude", longitude);
+                } catch (JSONException e) {
+                    throw new RuntimeException(e);
+                }
+
+                RequestBody body = RequestBody.create(MediaType.get("application/json; charset=utf-8"), data.toString());
+                OkHttpClient client = new OkHttpClient();
+                Request request = new Request.Builder().addHeader("Content-Type","application/json").url(url).post(body).build();
+
+                client.newCall(request).enqueue(new Callback() {
+                    @Override
+                    public void onFailure(@NonNull Call call, @NonNull IOException e) {
+                        e.printStackTrace();
+                    }
+
+                    @Override
+                    public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
+                        if(!response.isSuccessful()) {
+                            Log.i("tag", "응답 실패");
+                        }else{
+                            Log.i("tag","응답 성공");
+                            final String responseData = response.body().string();
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    try {
+                                        Toast.makeText(getActivity(), "응답"+responseData, Toast.LENGTH_SHORT).show();
+
+                                    }catch (Exception e){
+                                        e.printStackTrace();
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        }
+
+        if(Float.parseFloat(r.toString()) > 40.0 &&  arr[1]!=null && Float.parseFloat(spn.toString())>40.0 &&  arr[0]!=null){
+            imageView.setImageResource(R.drawable.bi);
+            right.setTextColor(getResources().getColor(R.color.colorRecieveText));
+            right.setMovementMethod(ScrollingMovementMethod.getInstance());
+            receiveText.setTextColor(getResources().getColor(R.color.colorRecieveText));
+            receiveText.setMovementMethod(ScrollingMovementMethod.getInstance());
+            statusText.setText("안전 운전중");
+            countR = 0;
+            countL = 0;
         }
 
 
