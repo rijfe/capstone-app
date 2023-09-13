@@ -29,6 +29,7 @@ import net.daum.mf.map.api.MapView;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.Date;
+import java.util.ArrayList;
 import java.util.Map;
 
 import de.kai_morich.simple_bluetooth_le_terminal.R;
@@ -44,6 +45,8 @@ public class Fragment_map extends Fragment implements MapView.CurrentLocationEve
     private View view;
     private ViewGroup viewGroup;
     Context ct;
+    GetMarkerData getMarkerData = new GetMarkerData();
+    ArrayList<MarkerData> data = getMarkerData.getData();
 
     public Fragment_map() {
         // Required empty public constructor
@@ -117,17 +120,22 @@ public class Fragment_map extends Fragment implements MapView.CurrentLocationEve
         mapView.setCurrentLocationTrackingMode(MapView.CurrentLocationTrackingMode.TrackingModeOnWithoutHeading);
         mapView.setCalloutBalloonAdapter(new CustomBalloon());
 
-        MapPoint mapPoint = MapPoint.mapPointWithGeoCoord(36.34974536587864,127.30010913328103);
-        MapPOIItem maker = new MapPOIItem();
-        maker.setItemName("난폭운전");
-        maker.setTag(1);
-        maker.setMapPoint(mapPoint);
-        maker.setMarkerType(MapPOIItem.MarkerType.CustomImage);
-        maker.setCustomImageResourceId(R.drawable.warning);
-        maker.setCustomImageAutoscale(false);
-        maker.setCustomImageAnchor(0.5f,1.0f);
 
-        mapView.addPOIItem(maker);
+
+        ArrayList<MapPOIItem> arr = new ArrayList<MapPOIItem>();
+
+        for(MarkerData d : data){
+            MapPOIItem marker = new MapPOIItem();
+            marker.setMapPoint(MapPoint.mapPointWithGeoCoord(d.latitude,d.longitude));
+            marker.setItemName(String.valueOf(d.name));
+            marker.setMarkerType(MapPOIItem.MarkerType.CustomImage);
+            marker.setCustomImageResourceId(R.drawable.warning);
+            marker.setCustomImageAutoscale(false);
+            marker.setCustomImageAnchor(0.5f,1.0f);
+            arr.add(marker);
+        }
+
+        mapView.addPOIItems(arr.toArray(new MapPOIItem[arr.size()]));
 
 
         return view;
@@ -168,13 +176,12 @@ public class Fragment_map extends Fragment implements MapView.CurrentLocationEve
         @RequiresApi(api = Build.VERSION_CODES.N)
         @Override
         public View getCalloutBalloon(MapPOIItem mapPOIItem) {
-            long now = System.currentTimeMillis();
-            Date date = new Date(now);
-            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-            String getTime = dateFormat.format(date);
 
-            ((TextView) balloon.findViewById(R.id.type)).setText("차간 주행");
-            ((TextView) balloon.findViewById(R.id.time)).setText(getTime);
+            for(MarkerData d : data){
+                ((TextView) balloon.findViewById(R.id.type)).setText(d.type);
+                ((TextView) balloon.findViewById(R.id.time)).setText(d.date);
+            }
+
             return balloon;
         }
 
@@ -248,6 +255,8 @@ public class Fragment_map extends Fragment implements MapView.CurrentLocationEve
     public void onMapViewMoveFinished(MapView mapView, MapPoint mapPoint) {
 
     }
+
+
 
 //    @Override
 //    public void onMapReady(@NonNull NaverMap naverMap)

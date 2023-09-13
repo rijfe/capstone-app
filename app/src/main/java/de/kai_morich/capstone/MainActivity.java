@@ -30,6 +30,10 @@ import androidx.core.app.ActivityCompat;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.DataOutputStream;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -73,6 +77,7 @@ MainActivity extends AppCompatActivity{
             @RequiresApi(api = Build.VERSION_CODES.N)
             @Override
             public void onClick(View view) {
+                String user = null;
 //                getAppKeyHash();
 //                String url = "http://172.17.155.63:8080/data/endpost/";
 ////                String id = idText.getText().toString();
@@ -153,6 +158,24 @@ MainActivity extends AppCompatActivity{
 //                        }
 //                    }
 //                });
+                FileOutputStream fos = null;
+                try {
+                    fos = openFileOutput("user.dat",MODE_PRIVATE);
+                } catch (FileNotFoundException e) {
+                    throw new RuntimeException(e);
+                }
+                DataOutputStream dos = new DataOutputStream(fos);
+                try {
+                    dos.writeUTF(user);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+                try {
+                    dos.flush();
+                    dos.close();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
                 Intent intent = new Intent(MainActivity.this, MainScreen.class);
                 startActivity(intent);
             }
