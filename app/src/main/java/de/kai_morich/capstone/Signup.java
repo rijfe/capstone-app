@@ -48,8 +48,8 @@ public class Signup extends AppCompatActivity {
             public void onClick(View view) {
                 email = idText.getText().toString();
                 pwd = pwdText.getText().toString();
-                String url = "http://172.17.155.63:8080/join/";
-
+                //String url = "http://172.17.155.63:8080/join/";
+                String url = "http://121.159.178.99:8080/join/";
                 JSONObject data = new JSONObject();
                 try {
                     data.put("email", email);

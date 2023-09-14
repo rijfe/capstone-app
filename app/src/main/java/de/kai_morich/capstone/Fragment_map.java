@@ -2,6 +2,7 @@ package de.kai_morich.capstone;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.Signature;
@@ -20,12 +21,18 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import net.daum.mf.map.api.CalloutBalloonAdapter;
 import net.daum.mf.map.api.MapPOIItem;
 import net.daum.mf.map.api.MapPoint;
 import net.daum.mf.map.api.MapView;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.Date;
@@ -33,6 +40,11 @@ import java.util.ArrayList;
 import java.util.Map;
 
 import de.kai_morich.simple_bluetooth_le_terminal.R;
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -83,6 +95,9 @@ public class Fragment_map extends Fragment implements MapView.CurrentLocationEve
         view = inflater.inflate(R.layout.fragment_map, container, false);
         ct = container.getContext();
         View balloonView = getLayoutInflater().inflate(R.layout.balloon_layout, null);
+        Bundle bundle = getArguments();
+
+        String u = bundle.getString("user");
 
         try{
             PackageInfo info = ct.getPackageManager().getPackageInfo(ct.getPackageName(), PackageManager.GET_SIGNATURES);
@@ -127,7 +142,7 @@ public class Fragment_map extends Fragment implements MapView.CurrentLocationEve
         for(MarkerData d : data){
             MapPOIItem marker = new MapPOIItem();
             marker.setMapPoint(MapPoint.mapPointWithGeoCoord(d.latitude,d.longitude));
-            marker.setItemName(String.valueOf(d.name));
+            marker.setItemName(String.valueOf(d.id));
             marker.setMarkerType(MapPOIItem.MarkerType.CustomImage);
             marker.setCustomImageResourceId(R.drawable.warning);
             marker.setCustomImageAutoscale(false);

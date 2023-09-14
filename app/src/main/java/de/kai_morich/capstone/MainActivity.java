@@ -79,106 +79,60 @@ MainActivity extends AppCompatActivity{
             public void onClick(View view) {
                 String user = null;
 //                getAppKeyHash();
-//                String url = "http://172.17.155.63:8080/data/endpost/";
-////                String id = idText.getText().toString();
-////                String pw = pwText.getText().toString();
- //               LocationManager lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-//                long mNow = System.currentTimeMillis();
-//                Date mDate = new Date(mNow);
-//                SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-mm-dd hh:mm:ss");
-//
-//                LocationListener locationListener = new LocationListener() {
-//                    @Override
-//                    public void onLocationChanged(@NonNull Location location) {
-//                        longitude = location.getLongitude();
-//                        latitude = location.getLatitude();
-//                    }
-//                };
-//                if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-//                    // TODO: Consider calling
-//                    //    ActivityCompat#requestPermissions
-//                    // here to request the missing permissions, and then overriding
-//                    //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-//                    //                                          int[] grantResults)
-//                    // to handle the case where the user grants the permission. See the documentation
-//                    // for ActivityCompat#requestPermissions for more details.
-//                    return;
-//                }
-//                lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
-//                Location location = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-//                longitude = location.getLongitude();
-////                latitude = location.getLatitude();
-//                Log.e("latitude", String.valueOf(latitude));
-//                Log.e("longitude", String.valueOf(longitude));
-//                JSONObject data = new JSONObject();
-//                try {
-//                    data.put("email", "sujin@gmail.com");
-//                    data.put("type", "차간주행");
-//                    data.put("time", simpleDateFormat.format(mDate));
-//                    data.put("latitude", 32.1235);
-//                    data.put("longitude", 35.65942);
-//                } catch (JSONException e) {
-//                    throw new RuntimeException(e);
-//                }
-//
-//                RequestBody body = RequestBody.create(MediaType.get("application/json; charset=utf-8"), data.toString());
-//                OkHttpClient client = new OkHttpClient();
-//                Request request = new Request.Builder().addHeader("Content-Type","application/json").url(url).post(body).build();
-//
-//                client.newCall(request).enqueue(new Callback() {
-//                    @Override
-//                    public void onFailure(@NonNull Call call, @NonNull IOException e) {
-//                        e.printStackTrace();
-//                    }
-//
-//                    @Override
-//                    public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
-//                        if(!response.isSuccessful()) {
-//                            Log.i("tag", "응답 실패");
-//                        }else{
-//                            Log.i("tag","응답 성공");
-//                            final String responseData = response.body().string();
-//                            runOnUiThread(new Runnable() {
-//                                @Override
-//                                public void run() {
-//                                    try {
-//                                        Toast.makeText(getApplicationContext(), "응답"+responseData, Toast.LENGTH_SHORT).show();
-//
-//                                    }catch (Exception e){
-//                                        e.printStackTrace();
-//                                    }
-//                                }
-//                            });
-//                        }
-//                    }
-//                });
-//                            Intent intent = new Intent(MainActivity.this, MainScreen.class);
-//                            startActivity(intent);
-//                            finish();
-//                        }
-//                    }
-//                });
-                FileOutputStream fos = null;
+                String url = "http://121.159.178.99:8080/login/";
+                String id = idText.getText().toString();
+                String pw = pwText.getText().toString();
+                JSONObject data = new JSONObject();
                 try {
-                    fos = openFileOutput("user.dat",MODE_PRIVATE);
-                } catch (FileNotFoundException e) {
+                    data.put("email", id);
+                    data.put("password", pw);
+                } catch (JSONException e) {
                     throw new RuntimeException(e);
                 }
-                DataOutputStream dos = new DataOutputStream(fos);
-                try {
-                    dos.writeUTF(user);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-                try {
-                    dos.flush();
-                    dos.close();
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-                Intent intent = new Intent(MainActivity.this, MainScreen.class);
-                startActivity(intent);
+
+                RequestBody body = RequestBody.create(MediaType.get("application/json; charset=utf-8"), data.toString());
+                OkHttpClient client = new OkHttpClient();
+                Request request = new Request.Builder().addHeader("Content-Type", "application/json").url(url).post(body).build();
+
+                client.newCall(request).enqueue(new Callback() {
+                    @Override
+                    public void onFailure(@NonNull Call call, @NonNull IOException e) {
+                        e.printStackTrace();
+                    }
+
+                    @Override
+                    public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
+                        if (!response.isSuccessful()) {
+                            Log.i("tag", "응답 실패");
+                        } else {
+                            Log.i("tag", "응답 성공");
+                            final String responseData = response.body().string();
+                            Intent intent = new Intent(MainActivity.this, MainScreen.class);
+                            intent.putExtra("user",id);
+                            startActivity(intent);
+                            finish();
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    try {
+                                        Toast.makeText(getApplicationContext(), "응답" + responseData, Toast.LENGTH_SHORT).show();
+
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+
             }
+//            }
+//        });
+
+//                Intent intent = new Intent(MainActivity.this, MainScreen.class);
+//                startActivity(intent);
+//            }
         });
 
         signUp.setOnClickListener(new View.OnClickListener() {

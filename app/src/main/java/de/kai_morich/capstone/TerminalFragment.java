@@ -286,7 +286,7 @@ public class TerminalFragment extends Fragment implements ServiceConnection, Ser
         SpannableStringBuilder angle = new SpannableStringBuilder();
         String msg;
         String[] arr = new String[0];
-        String url = "http://172.17.155.63:8080/data/endpost/";
+        String url = "http://121.159.178.99:8080/data/endpost/";
         LocationManager lm = (LocationManager) service.getSystemService(Context.LOCATION_SERVICE);
         long mNow = System.currentTimeMillis();
         Date mDate = new Date(mNow);
@@ -364,7 +364,7 @@ public class TerminalFragment extends Fragment implements ServiceConnection, Ser
                 return;
             }
             try {
-                data.put("email", "sujin@gmail.com");
+                data.put("email", "kyw@test.com");
                 data.put("type", "와리가리");
                 data.put("time", simpleDateFormat.format(mDate));
                 data.put("latitude", latitude);
@@ -437,7 +437,7 @@ public class TerminalFragment extends Fragment implements ServiceConnection, Ser
                 }
 
                 try {
-                    data.put("email", "sujin@gmail.com");
+                    data.put("email", "kyw@test.com");
                     data.put("type", "차간주행");
                     data.put("time", simpleDateFormat.format(mDate));
                     data.put("latitude", latitude);
@@ -501,7 +501,7 @@ public class TerminalFragment extends Fragment implements ServiceConnection, Ser
                 }
 
                 try {
-                    data.put("email", "sujin@gmail.com");
+                    data.put("email", "kyw@test.com");
                     data.put("type", "차간주행");
                     data.put("time", simpleDateFormat.format(mDate));
                     data.put("latitude", latitude);
@@ -568,7 +568,7 @@ public class TerminalFragment extends Fragment implements ServiceConnection, Ser
                 }
 
                 try {
-                    data.put("email", "sujin@gmail.com");
+                    data.put("email", "kyw@test.com");
                     data.put("type", "차간주행");
                     data.put("time", simpleDateFormat.format(mDate));
                     data.put("latitude", latitude);
