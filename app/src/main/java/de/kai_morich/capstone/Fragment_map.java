@@ -7,6 +7,8 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.Signature;
 import android.icu.text.SimpleDateFormat;
+import android.location.Location;
+import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
 
@@ -20,6 +22,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -58,7 +61,14 @@ public class Fragment_map extends Fragment implements MapView.CurrentLocationEve
     private ViewGroup viewGroup;
     Context ct;
     GetMarkerData getMarkerData = new GetMarkerData();
-    ArrayList<MarkerData> data = getMarkerData.getData();
+
+    ImageView statusImg;
+    String email;
+    ArrayList<MarkerData> data = getMarkerData.getData(email);
+
+    double range = 100;
+
+    int cntMarker = 0;
 
     public Fragment_map() {
         // Required empty public constructor
@@ -84,7 +94,7 @@ public class Fragment_map extends Fragment implements MapView.CurrentLocationEve
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         getContext();
-
+        email  = getArguments().getString("user");
     }
 
 
@@ -95,9 +105,10 @@ public class Fragment_map extends Fragment implements MapView.CurrentLocationEve
         view = inflater.inflate(R.layout.fragment_map, container, false);
         ct = container.getContext();
         View balloonView = getLayoutInflater().inflate(R.layout.balloon_layout, null);
-        Bundle bundle = getArguments();
 
-        String u = bundle.getString("user");
+        statusImg = (ImageView) view.findViewById(R.id.status);
+
+        statusImg.bringToFront();
 
         try{
             PackageInfo info = ct.getPackageManager().getPackageInfo(ct.getPackageName(), PackageManager.GET_SIGNATURES);
@@ -137,6 +148,11 @@ public class Fragment_map extends Fragment implements MapView.CurrentLocationEve
 
 
 
+        LocationManager locationManager = (LocationManager)getActivity().getSystemService(Context.LOCATION_SERVICE);
+        Location center = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+
+        Log.i("Center", center.toString());
+
         ArrayList<MapPOIItem> arr = new ArrayList<MapPOIItem>();
 
         for(MarkerData d : data){
@@ -147,7 +163,24 @@ public class Fragment_map extends Fragment implements MapView.CurrentLocationEve
             marker.setCustomImageResourceId(R.drawable.warning);
             marker.setCustomImageAutoscale(false);
             marker.setCustomImageAnchor(0.5f,1.0f);
+
+            Location makerLoc = new Location("Maker");
+            makerLoc.setLatitude(d.latitude);
+            makerLoc.setLongitude(d.longitude);
+
+            double distance = center.distanceTo(makerLoc);
+            Log.i("거리", String.valueOf(distance));
+            if(distance <= range){
+                cntMarker++;
+            }
             arr.add(marker);
+        }
+
+        if(cntMarker < 3){
+            statusImg.setImageResource(R.drawable.safe);
+        }
+        else{
+            statusImg.setImageResource(R.drawable.danger);
         }
 
         mapView.addPOIItems(arr.toArray(new MapPOIItem[arr.size()]));

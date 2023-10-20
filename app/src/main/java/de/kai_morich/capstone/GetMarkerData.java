@@ -18,15 +18,15 @@ import okhttp3.Request;
 import okhttp3.Response;
 
 public class GetMarkerData {
-    String url = "http://121.159.178.99:8080/getData/omj@gmail.com";
+    String url = "http://121.159.178.99:8080/data/list/";
     String user = "kyw@test.com";
 
-    public ArrayList<MarkerData> getData(){
+    public ArrayList<MarkerData> getData(String email){
         ArrayList<MarkerData> dataArr = new ArrayList<MarkerData>();
 
         //RequestBody body = RequestBody.create(MediaType.get("application/json; charset=utf-8"), data.toString());
         OkHttpClient client = new OkHttpClient();
-        Request request = new Request.Builder().addHeader("Content-Type","application/json").url(url).get().build();
+        Request request = new Request.Builder().addHeader("Content-Type","application/json").url(url+email).get().build();
         client.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(@NonNull Call call, @NonNull IOException e) {

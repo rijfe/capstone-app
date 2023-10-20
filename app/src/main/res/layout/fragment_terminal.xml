@@ -135,7 +135,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
                 android:layout_weight="1"
-                android:text="와리가리 횟수"
+                android:text="갈지자주행 횟수"
                 android:background="#FFFFFF"
                 android:freezesText="true"
                 android:scrollbars="vertical"

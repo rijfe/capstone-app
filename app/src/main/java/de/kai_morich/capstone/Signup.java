@@ -54,6 +54,10 @@ public class Signup extends AppCompatActivity {
                 try {
                     data.put("email", email);
                     data.put("password",pwd);
+                    data.put("name","rijfe");
+                    data.put("birth","1999.10.22");
+                    data.put("car_number","30버 1234");
+                    data.put("phone_number","010-1234-1234");
                 } catch (JSONException e) {
                     throw new RuntimeException(e);
                 }
