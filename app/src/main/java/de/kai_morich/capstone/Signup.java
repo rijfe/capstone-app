@@ -29,8 +29,8 @@ import okhttp3.Response;
 public class Signup extends AppCompatActivity {
 
     public Button signup;
-    public EditText idText, pwdText;
-    public static String email, pwd;
+    public EditText idText, pwdText, nameText, birthText, carNumText, phoneNumText;
+    public static String email, pwd, name, birth, carNum, phoneNum;
 
 
     @SuppressLint("MissingInflatedId")
@@ -42,22 +42,31 @@ public class Signup extends AppCompatActivity {
         signup = (Button) findViewById(R.id.suBtn);
         idText = (EditText) findViewById(R.id.sign_id);
         pwdText = (EditText) findViewById(R.id.sign_pw);
+        nameText = (EditText) findViewById(R.id.sign_name);
+        birthText = (EditText) findViewById(R.id.birth);
+        carNumText = (EditText) findViewById(R.id.sign_num);
+        phoneNumText = (EditText) findViewById(R.id.phone_num);
 
         signup.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 email = idText.getText().toString();
                 pwd = pwdText.getText().toString();
+                name = nameText.getText().toString();
+                birth = birthText.getText().toString();
+                carNum = carNumText.getText().toString();
+                phoneNum = phoneNumText.getText().toString();
+
                 //String url = "http://172.17.155.63:8080/join/";
                 String url = "http://121.159.178.99:8080/join/";
                 JSONObject data = new JSONObject();
                 try {
                     data.put("email", email);
                     data.put("password",pwd);
-                    data.put("name","rijfe");
-                    data.put("birth","1999.10.22");
-                    data.put("car_number","30버 1234");
-                    data.put("phone_number","010-1234-1234");
+                    data.put("name",name);
+                    data.put("birth",birth);
+                    data.put("car_number",carNum);
+                    data.put("phone_number",phoneNum);
                 } catch (JSONException e) {
                     throw new RuntimeException(e);
                 }
