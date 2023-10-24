@@ -3,7 +3,6 @@ package de.kai_morich.capstone;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.MenuItem;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -12,11 +11,6 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-
-import java.io.DataInputStream;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 
 import de.kai_morich.simple_bluetooth_le_terminal.R;
 
@@ -67,6 +61,9 @@ public class MainScreen extends AppCompatActivity implements FragmentManager.OnB
                             getSupportFragmentManager().beginTransaction().replace(R.id.fragment, new DevicesFragment(), "devices").commit();
                             return true;
                         case R.id.setting:
+                            Bundle bundle2 = new Bundle();
+                            bundle2.putString("user", user);
+                            fragmentSet.setArguments(bundle2);
                             getSupportFragmentManager().beginTransaction().replace(R.id.fragment,  fragmentSet, "setting").commit();
                             return true;
                     }

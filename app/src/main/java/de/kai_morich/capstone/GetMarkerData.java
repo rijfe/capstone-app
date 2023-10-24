@@ -19,7 +19,7 @@ import okhttp3.Response;
 
 public class GetMarkerData {
     String url = "http://121.159.178.99:8080/data/list/";
-    String user = "kyw@test.com";
+    //String user = "kyw@test.com";
 
     public ArrayList<MarkerData> getData(String email){
         ArrayList<MarkerData> dataArr = new ArrayList<MarkerData>();

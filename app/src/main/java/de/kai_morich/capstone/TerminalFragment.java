@@ -1,7 +1,6 @@
 package de.kai_morich.capstone;
 
 import android.Manifest;
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
@@ -13,11 +12,9 @@ import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.icu.text.SimpleDateFormat;
 import android.location.Location;
-import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.CountDownTimer;
 import android.os.IBinder;
 import android.text.Editable;
 import android.text.Spannable;
@@ -475,6 +472,7 @@ public class TerminalFragment extends Fragment implements ServiceConnection, Ser
                                 }
                             });
                         }
+
                     }
                 });
             }
@@ -539,6 +537,7 @@ public class TerminalFragment extends Fragment implements ServiceConnection, Ser
                                 }
                             });
                         }
+
                     }
                 });
             }
