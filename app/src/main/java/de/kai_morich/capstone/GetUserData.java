@@ -70,7 +70,7 @@ public class GetUserData {
                         Log.i("rank",object.getString("Rank"));
                         Log.i("rank",object.getJSONObject("UserInfo").getString("name"));
 
-                        name = object.getString("Rank");
+                        name = object.getJSONObject("UserInfo").getString("name");
                     } catch (JSONException e) {
                         throw new RuntimeException(e);
                     }

@@ -61,7 +61,7 @@ public class TerminalFragment extends Fragment implements ServiceConnection, Ser
 
     private String deviceAddress;
     private SerialService service;
-    private String sensorData;
+    private String ri,le,an;
 
     private TextView receiveText, angleText, right, statusText, closeText, zigzagText;
     private TextView sendText;
@@ -81,6 +81,8 @@ public class TerminalFragment extends Fragment implements ServiceConnection, Ser
     private int angleCount = 0;
     double longitude = 0;
     double latitude = 0;
+
+    boolean sendFlag = true;
     SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-mm-dd hh:mm:ss");
 
     /*
@@ -283,7 +285,7 @@ public class TerminalFragment extends Fragment implements ServiceConnection, Ser
         SpannableStringBuilder angle = new SpannableStringBuilder();
         String msg;
         String[] arr = new String[0];
-        String url = "http://121.159.178.99:8080/data/endpost/";
+        String url = "http://121.159.178.99:8080/data/post/";
         LocationManager lm = (LocationManager) service.getSystemService(Context.LOCATION_SERVICE);
         long mNow = System.currentTimeMillis();
         Date mDate = new Date(mNow);
@@ -301,9 +303,11 @@ public class TerminalFragment extends Fragment implements ServiceConnection, Ser
         Location location = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
         longitude = location.getLongitude();
         latitude = location.getLatitude();
+        boolean flag = true;
         for (byte[] data : datas) {
             msg = new String(data);
-            arr = msg.split("/");
+            Log.i("recive", msg);
+            arr = msg.split("&");
             if (hexEnabled) {
                 spn.append(TextUtil.toHexString(data)).append('\n');
             } else {
@@ -322,18 +326,21 @@ public class TerminalFragment extends Fragment implements ServiceConnection, Ser
                     }
                     pendingNewline = msg.charAt(msg.length() - 1) == '\r';
                 }
-                Log.e("data", arr[0]);
                 spn.append(TextUtil.toCaretString(arr[0], newline.length() != 0));
                 r.append(TextUtil.toCaretString(arr[1], newline.length() != 0));
-                angle.append(TextUtil.toCaretString(arr[2], newline.length() != 0));
+                angle.append(TextUtil.toCaretString(arr[2].substring(0,arr[2].length()-1), newline.length() != 0));
             }
         }
+
+        receiveText.setText(spn);
+        right.setText(r);
+        angleText.setText(angle);
 
         if (Float.parseFloat(angle.toString()) > 40.0 && arr[2] != null) {
             imageView.setImageResource(R.drawable.bir);
             angleText.setTextColor(getResources().getColor(R.color.colorPrimaryDark)); // set as default color to reduce number of spans
             angleText.setMovementMethod(ScrollingMovementMethod.getInstance());
-            statusText.setText("지그재그 운행중");
+            statusText.setText("갈지자 운행중");
             angleCount += 1;
 
         }
@@ -341,12 +348,12 @@ public class TerminalFragment extends Fragment implements ServiceConnection, Ser
             imageView.setImageResource(R.drawable.bil);
             angleText.setTextColor(getResources().getColor(R.color.colorPrimaryDark)); // set as default color to reduce number of spans
             angleText.setMovementMethod(ScrollingMovementMethod.getInstance());
-            statusText.setText("지그재그 운행중");
+            statusText.setText("갈지자 운행중");
             angleCount += 1;
 
         }
 
-        if (angleCount >= 3) {
+        if (angleCount >= 3 && sendFlag) {
             zigzagAmount += 1;
             zigzagText.setText(Integer.toString(zigzagAmount));
             JSONObject data = new JSONObject();
@@ -362,7 +369,7 @@ public class TerminalFragment extends Fragment implements ServiceConnection, Ser
             }
             try {
                 data.put("email", "kyw@test.com");
-                data.put("type", "와리가리");
+                data.put("type", "갈지자 주행");
                 data.put("time", simpleDateFormat.format(mDate));
                 data.put("latitude", latitude);
                 data.put("longitude", longitude);
@@ -387,7 +394,7 @@ public class TerminalFragment extends Fragment implements ServiceConnection, Ser
                     }else{
                         Log.i("tag","응답 성공");
                         final String responseData = response.body().string();
-
+                        sendFlag = false;
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
@@ -410,6 +417,7 @@ public class TerminalFragment extends Fragment implements ServiceConnection, Ser
             angleText.setMovementMethod(ScrollingMovementMethod.getInstance());
             statusText.setText("안전 운전중");
             angleCount -= 1;
+            sendFlag = true;
         }
 
         if (Float.parseFloat(spn.toString()) <= 40.0 && arr[0] != null) {
@@ -418,7 +426,7 @@ public class TerminalFragment extends Fragment implements ServiceConnection, Ser
             receiveText.setMovementMethod(ScrollingMovementMethod.getInstance());
             statusText.setText("차간 운행중");
             countR += 1;
-            if (countR >= 3 ) {
+            if (countR >= 3 && sendFlag) {
                 closeAmount += 1;
                 closeText.setText(Integer.toString(closeAmount));
                 JSONObject data = new JSONObject();
@@ -460,6 +468,7 @@ public class TerminalFragment extends Fragment implements ServiceConnection, Ser
                         }else{
                             Log.i("tag","응답 성공");
                             final String responseData = response.body().string();
+                            sendFlag = false;
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
@@ -483,7 +492,7 @@ public class TerminalFragment extends Fragment implements ServiceConnection, Ser
             right.setMovementMethod(ScrollingMovementMethod.getInstance());
             statusText.setText("차간 운행중");
             countL += 1;
-            if (countL >= 3) {
+            if (countL >= 3 && sendFlag) {
                 closeAmount += 1;
                 closeText.setText(Integer.toString(closeAmount));
                 JSONObject data = new JSONObject();
@@ -525,6 +534,7 @@ public class TerminalFragment extends Fragment implements ServiceConnection, Ser
                         }else{
                             Log.i("tag","응답 성공");
                             final String responseData = response.body().string();
+                            sendFlag = false;
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
@@ -551,7 +561,7 @@ public class TerminalFragment extends Fragment implements ServiceConnection, Ser
             statusText.setText("차간 운행중");
             countR += 1;
             countL += 1;
-            if (countR >= 3 || countL >= 3) {
+            if ((countR >= 3 || countL >= 3) && sendFlag) {
                 closeAmount += 1;
                 closeText.setText(Integer.toString(closeAmount));
                 JSONObject data = new JSONObject();
@@ -593,6 +603,7 @@ public class TerminalFragment extends Fragment implements ServiceConnection, Ser
                         }else{
                             Log.i("tag","응답 성공");
                             final String responseData = response.body().string();
+                            sendFlag = false;
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
@@ -610,7 +621,7 @@ public class TerminalFragment extends Fragment implements ServiceConnection, Ser
             }
         }
 
-        if(Float.parseFloat(r.toString()) > 40.0 &&  arr[1]!=null && Float.parseFloat(spn.toString())>40.0 &&  arr[0]!=null){
+        if(Float.parseFloat(r.toString()) > 40.0 &&  arr[0]!=null && Float.parseFloat(spn.toString())>40.0 &&  arr[1]!=null){
             imageView.setImageResource(R.drawable.bi);
             right.setTextColor(getResources().getColor(R.color.colorRecieveText));
             right.setMovementMethod(ScrollingMovementMethod.getInstance());
@@ -619,12 +630,9 @@ public class TerminalFragment extends Fragment implements ServiceConnection, Ser
             statusText.setText("안전 운전중");
             countR = 0;
             countL = 0;
+            sendFlag = true;
         }
 
-
-        receiveText.setText(spn);
-        right.setText(r);
-        angleText.setText(angle);
     }
 
     private void status(String str) {

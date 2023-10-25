@@ -22,6 +22,10 @@ public class MainScreen extends AppCompatActivity implements FragmentManager.OnB
     Fragment_set fragmentSet;
     String user;
 
+    GetUserData getUserData = new GetUserData();
+    String rank;
+    String name;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -58,11 +62,18 @@ public class MainScreen extends AppCompatActivity implements FragmentManager.OnB
                             return true;
                         case R.id.main:
 //                            getSupportFragmentManager().beginTransaction().replace(R.id.bottom_container, fragmentMain).commit();
-                            getSupportFragmentManager().beginTransaction().replace(R.id.fragment, new DevicesFragment(), "devices").commit();
+                            Bundle bundle3 = new Bundle();
+                            bundle3.putString("user", user);
+                            getSupportFragmentManager().beginTransaction().replace(R.id.fragment, new DevicesFragment() , "devices").commit();
                             return true;
                         case R.id.setting:
                             Bundle bundle2 = new Bundle();
-                            bundle2.putString("user", user);
+
+                            rank = getUserData.getUserRank(user);
+                            name = getUserData.getUserName(user);
+
+                            bundle2.putString("name", name);
+                            bundle2.putString("rank", rank);
                             fragmentSet.setArguments(bundle2);
                             getSupportFragmentManager().beginTransaction().replace(R.id.fragment,  fragmentSet, "setting").commit();
                             return true;

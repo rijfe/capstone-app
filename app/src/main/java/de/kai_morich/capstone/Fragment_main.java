@@ -1,12 +1,11 @@
 package de.kai_morich.capstone;
 
 import android.os.Bundle;
-
-import androidx.fragment.app.Fragment;
-
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+
+import androidx.fragment.app.Fragment;
 
 import de.kai_morich.simple_bluetooth_le_terminal.R;
 
